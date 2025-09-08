@@ -52,3 +52,47 @@ jobs:
         with:
           path: "./test/Allure.Examples.CiEnvs.Allure2.Tests/bin/${{ matrix.configuration }}/${{ matrix.framework }}/allure-results"
           name: "TestResults-${{ matrix.os }}-${{ matrix.framework }}-${{ matrix.configuration }}"
+
+  publish-report:
+    needs: build-test
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          path: allure-results
+          pattern: TestResults-*
+          merge-multiple: true
+
+      - name: Check out the GitHub Pages branch
+        uses: actions/checkout@v5
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Generate Allure report
+        uses: simple-elf/allure-report-action@v1.13
+        with:
+          allure_results: allure-results
+          gh_pages: gh-pages
+          allure_report: allure-report
+
+          # This is actually the output directory that should be published.
+          # It contains the generated report and up to 20 previous reports linked together.
+          # It also contains the history files required for the next report.
+          allure_history: ./public
+
+      - name: Deploy the report
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          force_orphan: true
