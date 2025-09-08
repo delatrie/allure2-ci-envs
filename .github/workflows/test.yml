@@ -36,10 +36,10 @@ jobs:
 
       - run: dotnet build --no-restore --framework ${{ matrix.framework }} --configuration ${{ matrix.configuration }}
 
-      - run: dotnet test --no-build --framework ${{ matrix.framework }} --configuration ${{ matrix.configuration }} --logger trx --results-directory ./TestResults
+      - run: dotnet test --no-build --framework ${{ matrix.framework }} --configuration ${{ matrix.configuration }}
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          path: "./TestResults"
+          path: "./test/Allure.Examples.CiEnvs.Allure2.Tests/bin/${{ matrix.configuration }}/${{ matrix.framework }}/allure-results"
           name: "TestResults-${{ matrix.os }}-${{ matrix.framework }}-${{ matrix.configuration }}"
